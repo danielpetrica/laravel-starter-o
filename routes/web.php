@@ -15,4 +15,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
+
+Route::get('/auth/redirect', [App\Http\Controllers\Auth\LoginController::class, 'redirect'])->name('auth.login');
+
+Route::get('/auth/callback', [App\Http\Controllers\Auth\LoginController::class, 'callback'])->name('auth.callback');
+
+Route::get('/auth/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('auth.logout');
+
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'view'])->middleware('auth:sanctum');

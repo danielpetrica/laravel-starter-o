@@ -25,13 +25,19 @@ class LoginController extends Controller {
         $userAzure = Socialite::driver('azure')->user();
 
         //** Controllo se la mail appartiene a un utente in DB oppure lo creo direttamente */
-        $user = User::query()->firstOrCreate([ 'email' => $userAzure->getEmail()]);
+        $user = User::query()
+                    ->where([ 'email' => $userAzure->getEmail()])
+                    ->first();
 
-        //'name' => $userAzure->getName(),
-        if ($user->name != $userAzure->getName()) {
-            $user->name = $userAzure->getName();
+        if (!$user) {
+            $user = new User(
+                [
+                    'email' => $userAzure->getEmail(),
+                    'name' => $userAzure->getName()]);
             $user->save();
         }
+
+        $user->refresh();
 
         if ($user) {
             Log::info("Accesso autorizzato", [
@@ -39,11 +45,12 @@ class LoginController extends Controller {
                 "UtenteDb" => $user,
             ]);
             Auth::loginUsingId($user->id);
-            return redirect(\route('dashboard'));
+            return redirect(\route('welcome'));
         } else {
             Log::warning("Tentativo accesso non autorizzato", [$userAzure]);
             Auth::logout(); // Log out app
-            return redirect(\route('home'))->with('status', 'Unauthorized');
+            return redirect(\route('welcome'))
+                ->with('status', 'Unauthorized');
         }
         // $user->token
     }
@@ -66,6 +73,6 @@ class LoginController extends Controller {
         if (Auth::check()) {
             Auth::logout();
         }
-        return redirect(\route('home'))->with('status', 'Logout ok');
+        return redirect(\route('welcome'))->with('status', 'Logout ok');
     }
 }
