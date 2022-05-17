@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  web:
+    container_name: lstart_web
+#    image: ghcr.io/danielpetrica/php:7.4.10
+    build:
+     context: ./
+     dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "3007:80"
+    networks:
+      - local_docker
+    deploy:
+      resources:
+        limits:
+           cpus: '0.5'
+           memory: 150M
+
+  db:
+    image: ghcr.io/danielpetrica/low-memory-mysql:5.6
+    container_name: lstart_db
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - dbdataLStart:/var/lib/mysql/
+    ports:
+      - 6307:3306
+    networks:
+      - local_docker
+    deploy:
+      resources:
+        limits:
+           cpus: '1'
+           memory: 250M
+    environment:
+#       MYSQL_ROOT_HOST: '%'
+       MYSQL_HOST: ${DB_HOST}
+       MYSQL_DATABASE: ${DB_DATABASE}
+       MYSQL_USER: ${DB_NORMAL_USERNAME}
+       MYSQL_PASSWORD: ${DB_PASSWORD}
+       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+#db:
+#    image: mysql:5.6.39
+#    container_name: lstart_db
+#    volumes:
+#      - dbdata:/var/lib/mysql/
+#    ports:
+#      - 3306:3306
+#    networks:
+#      - local_docker
+#    environment:
+#       MYSQL_DATABASE: ${DB_DATABASE}
+#       MYSQL_USER: ${DB_USERNAME}
+#       MYSQL_PASSWORD: ${DB_PASSWORD}
+#       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+volumes:
+  dbdataLStart:
+
+networks:
+  local_docker:
+     external: true
